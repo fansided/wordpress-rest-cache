@@ -99,6 +99,10 @@ if ( ! class_exists( 'WP_Rest_Cache' ) ) {
 				WRC_Cron::init();
 			}
 
+			if ( class_exists( 'WRC_Trash_Cron' ) ) {
+				WRC_Trash_Cron::init();
+			}
+
 			if ( class_exists( 'WRC_Filters' ) ) {
 				WRC_Filters::init();
 			}
