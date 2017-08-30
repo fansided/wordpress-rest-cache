@@ -7,6 +7,7 @@
 class WRC_Trash_Cron {
 	static $frequency_in_hours = 24;
 	static $delete_older_than = 7; // delete cache items older than {num} days
+	static $query_limit = 1000;
 	const CRON_NAME = 'wp_rest_cache_trash_cron';
 
 	/**
@@ -92,11 +93,16 @@ class WRC_Trash_Cron {
 		 * date is older than the amount of days set in $delete_older_than
 		 */
 		global $wpdb;
-		$query   = 'DELETE FROM ' . REST_CACHE_TABLE . ' WHERE rest_last_requested > ' . $delete_older_than . ' LIMIT 1000';
-		$results = $wpdb->get_results( $query );
+		$query   = 'DELETE FROM ' . REST_CACHE_TABLE . ' WHERE rest_last_requested < "' . $delete_older_than . '" LIMIT ' . static::$query_limit;
+		$results = $wpdb->query( $query );
 
-		// TODO: loop this function so it keeps running queries until there are no more old results.
-//		error_log( var_export( $results, true ) );
+		/**
+		 * Run a while loop based on the above query -- we need to continue to run
+		 * the DELETE until the result is zero (meaning there's nothing left to delete)
+		 */
+		while ( $results > 0 ) {
+			$results = $wpdb->query( $query );
+		}
 
 		return;
 	}
