@@ -1,14 +1,35 @@
 <?php
+
 /**
- * Class WRC_Trash_Cron
+ * Class WRC_Trash
+ *
+ * Sets up a cron for trash collection on a regular interval,
+ * so the `wp_rest_cache` table doesn't get fulled up with old
+ * unused cache items.
  *
  * @since 1.4.0
  */
-class WRC_Trash_Cron {
-	static $frequency_in_hours = 24;
-	static $delete_older_than = 7; // delete cache items older than {num} days
-	static $query_limit = 1000;
+class WRC_Trash {
 	const CRON_NAME = 'wp_rest_cache_trash_cron';
+	/**
+	 * Trash collection cron frequency.
+	 *
+	 * @var int
+	 */
+	static $frequency_in_hours = 24;
+	/**
+	 * Delete cache items older than {num} days.
+	 *
+	 * @var int
+	 */
+	static $delete_older_than = 7;
+	/**
+	 * Sets a limit to the query -- this number will be used
+	 * in a while loop and will be run as many times as necessary.
+	 *
+	 * @var int
+	 */
+	static $query_limit = 1000;
 
 	/**
 	 * Initialize
@@ -41,7 +62,7 @@ class WRC_Trash_Cron {
 	}
 
 	/**
-	 * Set up the initial cron
+	 * Set up the initial cron.
 	 *
 	 * @since 1.4.0
 	 *
@@ -58,7 +79,7 @@ class WRC_Trash_Cron {
 		}
 
 		/**
-		 * If we're on a multisite, only schedule the cron if we're on the primary blog
+		 * If we're on a multisite, only schedule the cron to run on the primary blog.
 		 */
 		if (
 			( ! $is_multisite || ( $is_multisite && $primary_blog->id === $current_blog ) )
@@ -84,10 +105,10 @@ class WRC_Trash_Cron {
 			return;
 		}
 
-		// Get the exact date we need to check `rest_last_requested` against
-		$days_in_seconds = $delete_older_than * DAY_IN_SECONDS;
+		// Get the exact date we need to check `rest_last_requested` against.
+		$days_in_seconds   = $delete_older_than * DAY_IN_SECONDS;
 		$delete_older_than = date( 'Y-m-d', time() - $days_in_seconds );
-		$optimize = false;
+		$optimize          = false;
 
 		/**
 		 * Search our custom DB table for cached items whose "rest_last_requested"
@@ -113,7 +134,7 @@ class WRC_Trash_Cron {
 		// Run a table optimization to help tidy things up.
 		$optimize = apply_filters( 'wrc_optimize_table_on_trash_collect', $optimize );
 		if ( true == $optimize ) {
-			$wpdb->query( 'OPTIMIZE TABLE `' . REST_CACHE_TABLE . '`');
+			$wpdb->query( 'OPTIMIZE TABLE `' . REST_CACHE_TABLE . '`' );
 		}
 
 		return;

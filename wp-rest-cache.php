@@ -38,7 +38,7 @@ if ( ! class_exists( 'WP_Rest_Cache' ) ) {
 		public $installed_dir;
 		static $table = 'rest_cache'; // the prefix is appended once we have access to the $wpdb global
 		static $table_version_key = 'wrc_table_version';
-		static $columns = 'rest_md5,rest_domain,rest_path,rest_response,rest_expires,rest_last_requested,rest_tag,rest_to_update';
+		static $columns = 'rest_md5,rest_key,rest_domain,rest_path,rest_response,rest_expires,rest_last_requested,rest_tag,rest_to_update';
 		static $default_expires = array(
 			// Default status codes  to 10 minutes, this is always in seconds.
 			'default' => 10 * MINUTE_IN_SECONDS,
@@ -99,8 +99,8 @@ if ( ! class_exists( 'WP_Rest_Cache' ) ) {
 				WRC_Cron::init();
 			}
 
-			if ( class_exists( 'WRC_Trash_Cron' ) ) {
-				WRC_Trash_Cron::init();
+			if ( class_exists( 'WRC_Trash' ) ) {
+				WRC_Trash::init();
 			}
 
 			if ( class_exists( 'WRC_Filters' ) ) {
