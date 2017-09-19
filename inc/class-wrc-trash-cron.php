@@ -87,21 +87,33 @@ class WRC_Trash_Cron {
 		// Get the exact date we need to check `rest_last_requested` against
 		$days_in_seconds = $delete_older_than * DAY_IN_SECONDS;
 		$delete_older_than = date( 'Y-m-d', time() - $days_in_seconds );
+		$optimize = false;
 
 		/**
 		 * Search our custom DB table for cached items whose "rest_last_requested"
-		 * date is older than the amount of days set in $delete_older_than
+		 * date is older than the amount of days set in $delete_older_than.
 		 */
 		global $wpdb;
 		$query   = 'DELETE FROM ' . REST_CACHE_TABLE . ' WHERE rest_last_requested < "' . $delete_older_than . '" LIMIT ' . static::$query_limit;
 		$results = $wpdb->query( $query );
 
+		// Only run table optimize if there were deletions.
+		if ( $results > 0 ) {
+			$optimize = true;
+		}
+
 		/**
 		 * Run a while loop based on the above query -- we need to continue to run
-		 * the DELETE until the result is zero (meaning there's nothing left to delete)
+		 * the DELETE until the result is zero (meaning there's nothing left to delete).
 		 */
 		while ( $results > 0 ) {
 			$results = $wpdb->query( $query );
+		}
+
+		// Run a table optimization to help tidy things up.
+		$optimize = apply_filters( 'wrc_optimize_table_on_trash_collect', $optimize );
+		if ( true == $optimize ) {
+			$wpdb->query( 'OPTIMIZE TABLE `' . REST_CACHE_TABLE . '`');
 		}
 
 		return;
