@@ -4,7 +4,7 @@
  * Plugin URI: https://github.com/WordPress-Phoenix/wordpress-rest-cache
  * Description: A solution to caching REST data calls without relying on transients or wp_options tables. Note: for multisite "Network Activate", table may need manually created before activation.
  * Author: scarstens, mlteal
- * Version: 1.3.1
+ * Version: 1.3.2
  * Author URI: http://github.com/scarstens
  * License: GPL V2
  * Text Domain: rest_cache
@@ -81,6 +81,10 @@ if ( ! class_exists( 'WP_Rest_Cache' ) ) {
 
 			// hook can be used by mu plugins to modify plugin behavior after plugin is setup
 			do_action( get_called_class() . '_setup', $this );
+
+			if ( class_exists( 'WRC_Logger' ) ) {
+				add_action( 'admin_init', array( 'WRC_Logger', 'site_setting' ) );
+			}
 
 		} // END public function __construct
 
