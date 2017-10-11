@@ -12,6 +12,8 @@
  */
 class WRC_Cron {
 
+	public static $logger = null;
+
 	/**
 	 * Initialize
 	 */
@@ -85,10 +87,17 @@ class WRC_Cron {
 		 * out PHP by, for example, running ten 7-second calls in a row.
 		 */
 		global $wpdb;
+		if ( class_exists( 'WRC_Logger' ) ) {
+			self::$logger = new WRC_Logger( get_called_class() );
+		}
+
 		$query   = 'SELECT * FROM ' . REST_CACHE_TABLE . ' WHERE rest_to_update = 1';
 		$results = $wpdb->get_results( $query, ARRAY_A );
 
 		if ( is_array( $results ) && ! empty( $results ) ) {
+			$cache_to_clear = count( $results );
+			$cache_cleared  = $cache_failed = $cache_attempted = 0;
+			self::maybe_log( 'log', 'Found ' . $cache_to_clear . ' records we need to update cache for.' );
 			foreach ( $results as $row ) {
 				// run maybe_unserialize on rest_args and check to see if the update arg is set and set to false if it is
 				$args = maybe_unserialize( $row['rest_args'] );
@@ -101,14 +110,32 @@ class WRC_Cron {
 				 * Make the call as a wp_safe_remote_get - the response will be saved when we run
 				 * `apply_filters( 'http_response', $response, $args, $url )` below
 				 */
-				$response = wp_safe_remote_get( $url, $args );
+				$response = wp_remote_get( $url, $args );
 
-				if ( $response ) {
-					// run self:: store_data
-					self::store_data( $response, $args, $url, true );
+				$cache_attempted ++;
+				if ( 'WP_Error' == get_class( $response ) ) {
+					$cache_failed ++;
+					self::maybe_log( 'error', 'FAIL: ' . $cache_attempted . ' of ' . $cache_to_clear . ' ( ' . $url . ' )', $response->get_error_messages() );
+				} else {
+					if ( $response ) {
+						self::store_data( $response, $args, $url );
+						self::maybe_log( 'log', 'DONE: ' . $cache_attempted . ' of ' . $cache_to_clear );
+						$cache_cleared ++;
+					} else {
+						self::maybe_log( 'warn', 'Should never hit here.' );
+					}
 				}
 			}
+			if ( $cache_cleared == $cache_to_clear ) {
+				self::maybe_log( 'log', 'Everything has been cleared as it should!' );
+			}
+			if ( $cache_failed ) {
+				self::maybe_log( 'warn', 'Failed to update ' . $cache_failed . ' of ' . $cache_to_clear );
+			}
+		} else {
+			self::maybe_log( 'log', 'All cache looks to be up to date.' );
 		}
+		self::maybe_log( 'log', get_called_class() . ' has been completed.' );
 
 		return;
 	}
@@ -187,4 +214,13 @@ class WRC_Cron {
 		return $response;
 	}
 
+	static function maybe_log( $level, $message, $details = array() ) {
+		if ( ! is_null( self::$logger ) ) {
+			if ( in_array( $level, array( 'log', 'warn', 'error' ) ) ) {
+				self::$logger->$level( $message, $details );
+			} else {
+				self::$logger->warn( 'Logger attempted to write invalid level. (' . sanitize_text_field( $level ) . ')' );
+			}
+		}
+	}
 }

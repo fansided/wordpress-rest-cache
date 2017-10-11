@@ -82,6 +82,10 @@ if ( ! class_exists( 'WP_Rest_Cache' ) ) {
 			// hook can be used by mu plugins to modify plugin behavior after plugin is setup
 			do_action( get_called_class() . '_setup', $this );
 
+			if ( class_exists( 'WRC_Logger' ) ) {
+				add_action( 'admin_init', array( 'WRC_Logger', 'site_setting' ) );
+			}
+
 		} // END public function __construct
 
 		/**
