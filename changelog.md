@@ -1,3 +1,6 @@
+#### 1.3.4
+* Added limit to admin settings for REST Cache Cron
+
 #### 1.3.3
 * Fixing logger for cron database option
 
