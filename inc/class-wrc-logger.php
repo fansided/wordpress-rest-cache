@@ -105,6 +105,17 @@ class WRC_Logger {
 					get_called_class(),
 					'wrc_log_setting',
 				), 'general' );
+
+				register_setting( 'general', self::SETTING_FLAG . '_limit', array(
+					'type'         => 'number',
+					'description'  => 'The limit for each WRC_Cron records to process at a time.',
+					'show_in_rest' => false,
+					'default'      => '2000',
+				) );
+				add_settings_field( self::SETTING_FLAG . '_limit', 'WRC Cron Limit', array(
+					get_called_class(),
+					'wrc_cron_limit',
+				), 'general' );
 			} catch ( Error $error ) {
 				// Dang, fired to early
 			} catch ( Exception $exception ) {
@@ -124,6 +135,16 @@ class WRC_Logger {
 			<option vlaue="database"<?php echo( ( 'database' == $logger ) ? ' selected' : '' ); ?>>Database</option>
 			<option value="file"<?php echo( ( 'file' == $logger ) ? ' selected' : '' ); ?>>File</option>
 		</select>
+		<?php
+	}
+
+	/**
+	 * Show a slug input box.
+	 */
+	public static function wrc_cron_limit() {
+		$limit = get_option( self::SETTING_FLAG . '_limit', '2000' );
+		?>
+		<input type="number" name="wrc_logger_limit" value="<?php echo($limit); ?>">
 		<?php
 	}
 }

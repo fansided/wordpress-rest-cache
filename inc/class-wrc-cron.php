@@ -87,11 +87,16 @@ class WRC_Cron {
 		 * out PHP by, for example, running ten 7-second calls in a row.
 		 */
 		global $wpdb;
+		$limit = 2000;
 		if ( class_exists( 'WRC_Logger' ) ) {
 			self::$logger = new WRC_Logger( get_called_class() );
+			$cron_limit   = get_option( WRC_Logger::SETTING_FLAG . '_limit', '2000' );
+			if ( is_numeric( $cron_limit ) ) {
+				$limit = $cron_limit;
+			}
 		}
 
-		$query   = 'SELECT * FROM ' . REST_CACHE_TABLE . ' WHERE rest_to_update = 1';
+		$query   = 'SELECT * FROM ' . REST_CACHE_TABLE . ' WHERE rest_to_update = 1 LIMIT ' . $limit;
 		$results = $wpdb->get_results( $query, ARRAY_A );
 
 		if ( is_array( $results ) && ! empty( $results ) ) {
@@ -195,7 +200,7 @@ class WRC_Cron {
 
 		$data = array(
 			'rest_md5'            => $md5,
-			'rest_key'                 => $md5 . '+' . substr( sanitize_key( $tag ), 0, 32 ),
+			'rest_key'            => $md5 . '+' . substr( sanitize_key( $tag ), 0, 32 ),
 			'rest_domain'         => $domain,
 			'rest_path'           => $path,
 			'rest_response'       => maybe_serialize( $response ),
@@ -205,7 +210,7 @@ class WRC_Cron {
 			'rest_tag'            => $tag,
 			'rest_to_update'      => $update,
 			'rest_args'           => '',
-			'rest_status_code'         => $status_code,
+			'rest_status_code'    => $status_code,
 		);
 
 		// either update or insert
