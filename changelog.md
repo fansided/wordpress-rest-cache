@@ -1,3 +1,6 @@
+#### 1.3.3
+* Fixing logger for cron database option
+
 #### 1.3.2
 * Adding logger for CRON debugging ( WRC_Logger )
 
