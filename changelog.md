@@ -1,3 +1,6 @@
+#### 1.3.2
+* Adding logger for CRON debugging ( WRC_Logger )
+
 #### 1.3.1
 * Critical update: if you were manually defining an `expires` value as 
   a string, it was automatically setting the expiration time to 1 second.
