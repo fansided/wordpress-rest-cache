@@ -56,8 +56,9 @@ class WRC_Logger {
 				}
 				break;
 			case 'database':
-				$log   = unserialize( get_option( $this->logging_key ) );
-				$log[] = date( 'Y-m-d H:i:s' ) . ' [' . $level . '] ' . trim( $message );
+				$last_log = get_option( $this->logging_key );
+				$log      = maybe_unserialize( $last_log );
+				$log[]    = date( 'Y-m-d H:i:s' ) . ' [' . $level . '] ' . trim( $message );
 				foreach ( $details as $detail ) {
 					$log[] = self::DETAIL_GLUE . trim( $detail );
 				}
