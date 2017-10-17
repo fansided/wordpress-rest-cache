@@ -118,14 +118,22 @@ class WRC_Cron {
 				$response = wp_remote_get( $url, $args );
 
 				$cache_attempted ++;
-				if ( 'WP_Error' == get_class( $response ) ) {
+				if ( is_object( $response ) && 'WP_Error' == get_class( $response ) ) {
 					$cache_failed ++;
 					self::maybe_log( 'error', 'FAIL: ' . $cache_attempted . ' of ' . $cache_to_clear . ' ( ' . $url . ' )', $response->get_error_messages() );
 				} else {
 					if ( $response ) {
-						self::store_data( $response, $args, $url );
-						self::maybe_log( 'log', 'DONE: ' . $cache_attempted . ' of ' . $cache_to_clear );
-						$cache_cleared ++;
+						try {
+							self::store_data( $response, $args, $url );
+							self::maybe_log( 'log', 'DONE: ' . $cache_attempted . ' of ' . $cache_to_clear );
+							$cache_cleared ++;
+						} catch ( Exception $ex ) {
+							self::maybe_log( 'error', 'EXCEPTION: ' . $ex->getMessage() );
+							$cache_failed ++;
+						} catch ( Error $er ) {
+							self::maybe_log( 'error', 'ERROR: ' . $er->getMessage() );
+							$cache_failed ++;
+						}
 					} else {
 						self::maybe_log( 'warn', 'Should never hit here.' );
 					}
