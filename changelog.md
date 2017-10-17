@@ -1,3 +1,6 @@
+#### 1.3.5
+* Checking if is_object() and added try catches in CRON
+
 #### 1.3.4
 * Added limit to admin settings for REST Cache Cron
 
