@@ -243,7 +243,7 @@ if ( ! class_exists( 'WP_Rest_Cache' ) ) {
 		 */
 		public static function is_dev() {
 			// catches dev.mydomain.com, mydomain.dev, wpengine staging domains and mydomain.staging
-			return (bool) ( stristr( WP_NETWORKURL, '.dev' ) || stristr( WP_NETWORKURL, '.wpengine' ) || stristr( WP_NETWORKURL, 'dev.' ) || stristr( WP_NETWORKURL, '.staging' ) );
+			return (bool) ( stristr( WP_NETWORKURL, '.test' ) || stristr( WP_NETWORKURL, '.wpengine' ) || stristr( WP_NETWORKURL, 'dev.' ) || stristr( WP_NETWORKURL, '.staging' ) );
 		}
 
 		/**
