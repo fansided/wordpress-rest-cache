@@ -195,22 +195,29 @@ class WRC_Cron {
 		$pass       = isset( $parsed_url['pass'] ) ? ':' . $parsed_url['pass'] : '';
 		$pass       = ( $user || $pass ) ? $pass . '@' : '';
 		$path       = isset( $parsed_url['path'] ) ? $parsed_url['path'] : '';
-		$query      = isset( $parsed_url['query'] ) ? '?' . $parsed_url['query'] : '';
+		$query      = isset( $parsed_url['query'] ) ? $parsed_url['query'] : '';
 		$fragment   = isset( $parsed_url['fragment'] ) ? '#' . $parsed_url['fragment'] : '';
+
+		// Organize Query Args
+		if( ! empty( $query ) ) {
+			$query_args = explode( '&', $query );
+			sort( $query_args, SORT_STRING );
+			$query = implode( '&', $query_args );
+		}
 
 		// a domain could potentially not have a scheme, in which case we need to skip appending the colon
 		$domain = $scheme . $user . $pass . $host . $port;
-		$path   = $path . $query . $fragment;
+		$query .= $fragment;
 
 		$tag    = ! empty( $args['wp-rest-cache']['tag'] ) ? $args['wp-rest-cache']['tag'] : '';
 		$update = ! empty( $args['wp-rest-cache']['update'] ) ? $args['wp-rest-cache']['update'] : 0;
-		$md5    = md5( $url );
+		$md5    = md5( $domain . $path . $query );
 
 		$data = array(
 			'rest_md5'            => $md5,
-			'rest_key'            => $md5 . '+' . substr( sanitize_key( $tag ), 0, 32 ),
 			'rest_domain'         => $domain,
 			'rest_path'           => $path,
+			'rest_query_args'     => $query,
 			'rest_response'       => maybe_serialize( $response ),
 			'rest_expires'        => $expiration_date,
 			'rest_last_requested' => date( 'Y-m-d', time() ),

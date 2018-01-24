@@ -141,7 +141,6 @@ if ( ! class_exists( 'WP_Rest_Cache' ) ) {
 
 			$sql = 'CREATE TABLE ' . REST_CACHE_TABLE . " (
 			`rest_md5` char(32) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-            `rest_key` varchar(65) COLLATE utf8_unicode_ci NOT NULL,
             `rest_domain` varchar(1055) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
             `rest_path` varchar(1055) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
             `rest_response` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -157,8 +156,7 @@ if ( ! class_exists( 'WP_Rest_Cache' ) ) {
   KEY `rest_last_requested` (`rest_last_requested`),
   KEY `rest_tag` (`rest_tag`(191)),
   KEY `rest_to_update` (`rest_to_update`),
-  KEY `rest_status_code` (`rest_status_code`),
-  KEY `rest_key` (`rest_key`)
+  KEY `rest_status_code` (`rest_status_code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
 
 			require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
@@ -256,14 +254,12 @@ if ( ! class_exists( 'WP_Rest_Cache' ) ) {
 				// Version 2 adds a `rest_status_code` column to the table.
 				global $wpdb;
 				$query1 = $wpdb->query( "ALTER TABLE `{$wpdb->rest_cache}` ADD `rest_status_code` VARCHAR(3) COLLATE utf8_unicode_ci NOT NULL DEFAULT '200' AFTER `rest_args`;" );
-				$query2 = $wpdb->query( "ALTER TABLE `{$wpdb->rest_cache}` ADD `rest_key` VARCHAR(65) COLLATE utf8_unicode_ci NOT NULL AFTER `rest_md5`;" );
 
-				if ( $query1 && $query2 ) {
+				if ( $query1 ) {
 					update_site_option( self::$table_version_key, '3' );
 				} else {
 					new WP_Error( 'wrc_error', 'There was an error updating the WP REST Cache table.', array(
-						$query1,
-						$query2,
+						$query1
 					) );
 				}
 			}
