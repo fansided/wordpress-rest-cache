@@ -96,7 +96,15 @@ class WRC_Cron {
 			}
 		}
 
-		$query   = 'SELECT * FROM ' . REST_CACHE_TABLE . ' WHERE rest_to_update = 1 LIMIT ' . $limit;
+		$query   = '
+SELECT 
+	rest_domain, 
+	rest_path, 
+	rest_args, 
+	rest_query_args 
+FROM ' . REST_CACHE_TABLE . ' 
+WHERE rest_to_update = 1 
+LIMIT ' . $limit;
 		$results = $wpdb->get_results( $query, ARRAY_A );
 
 		if ( is_array( $results ) && ! empty( $results ) ) {
@@ -107,6 +115,7 @@ class WRC_Cron {
 				// run maybe_unserialize on rest_args and check to see if the update arg is set and set to false if it is
 				$args = maybe_unserialize( $row['rest_args'] );
 				$url  = $row['rest_domain'] . $row['rest_path'];
+				$url .= ( ! empty( $row['rest_query_args'] ) ) ? '?' . trim( $row['rest_query_args'] ) : '';
 				if ( ! empty( $args['wp-rest-cache']['update'] ) ) {
 					$args['wp-rest-cache']['update'] = 0;
 				}
