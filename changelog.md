@@ -1,3 +1,8 @@
+#### 1.3.6
+* Optimizing Rest Cache Table
+* Cleaning up SQL Select in Cron
+* Separating Data into New Columns
+
 #### 1.3.5
 * Checking if is_object() and added try catches in CRON
 
