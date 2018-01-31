@@ -85,7 +85,7 @@ class WRC_Caching {
 
 		$tag    = ! empty( $args['wp-rest-cache']['tag'] ) ? $args['wp-rest-cache']['tag'] : '';
 		$update = ! empty( $args['wp-rest-cache']['update'] ) ? $args['wp-rest-cache']['update'] : 0;
-		$md5    = md5( $domain . $path . $query );
+		$md5    = md5( strtolower( $domain . $path . $query ) );
 
 		$data = array(
 			'rest_md5'            => $md5,
@@ -215,7 +215,32 @@ class WRC_Caching {
 	 */
 	static function get_data( $url ) {
 		global $wpdb;
-		$data = $wpdb->get_row( 'SELECT * FROM ' . REST_CACHE_TABLE . ' WHERE rest_md5 = "' . md5( $url ) . '" ', ARRAY_A );
+
+		$parsed_url = parse_url( $url );
+		$scheme     = isset( $parsed_url['scheme'] ) ? $parsed_url['scheme'] . '://' : '';
+		$host       = isset( $parsed_url['host'] ) ? $parsed_url['host'] : '';
+		$port       = isset( $parsed_url['port'] ) ? ':' . $parsed_url['port'] : '';
+		$user       = isset( $parsed_url['user'] ) ? $parsed_url['user'] : '';
+		$pass       = isset( $parsed_url['pass'] ) ? ':' . $parsed_url['pass'] : '';
+		$pass       = ( $user || $pass ) ? $pass . '@' : '';
+		$path       = isset( $parsed_url['path'] ) ? $parsed_url['path'] : '';
+		$query      = isset( $parsed_url['query'] ) ? $parsed_url['query'] : '';
+		$fragment   = isset( $parsed_url['fragment'] ) ? '#' . $parsed_url['fragment'] : '';
+
+		// Organize Query Args
+		if( ! empty( $query ) ) {
+			$query_args = explode( '&', $query );
+			sort( $query_args, SORT_STRING );
+			$query = implode( '&', $query_args );
+		}
+
+		// a domain could potentially not have a scheme, in which case we need to skip appending the colon
+		$domain = $scheme . $user . $pass . $host . $port;
+		$query .= $fragment;
+
+		$md5    = md5( strtolower( $domain . $path . $query ) );
+
+		$data = $wpdb->get_row( 'SELECT * FROM ' . REST_CACHE_TABLE . ' WHERE rest_md5 = "' . $md5 . '" ', ARRAY_A );
 
 		// if the query doesn't return a row from the DB, return false
 		if ( null === $data ) {
