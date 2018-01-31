@@ -220,7 +220,7 @@ LIMIT ' . $limit;
 
 		$tag    = ! empty( $args['wp-rest-cache']['tag'] ) ? $args['wp-rest-cache']['tag'] : '';
 		$update = ! empty( $args['wp-rest-cache']['update'] ) ? $args['wp-rest-cache']['update'] : 0;
-		$md5    = md5( $domain . $path . $query );
+		$md5    = md5( strtolower( $domain . $path . $query ) );
 
 		$data = array(
 			'rest_md5'            => $md5,
