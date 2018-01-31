@@ -1,3 +1,6 @@
+#### 1.3.7
+* Updated logic for processing the MD5 hash guts (strtolower & url parsing)
+
 #### 1.3.6
 * Optimizing Rest Cache Table
 * Cleaning up SQL Select in Cron
