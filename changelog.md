@@ -1,3 +1,6 @@
+#### 1.3.8
+* Update release process to Circle CI
+
 #### 1.3.7
 * Updated logic for processing the MD5 hash guts (strtolower & url parsing)
 
