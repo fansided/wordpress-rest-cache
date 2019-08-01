@@ -239,7 +239,7 @@ LIMIT ' . $limit;
 			'rest_query_args'     => $query,
 			'rest_response'       => maybe_serialize( $response ),
 			'rest_expires'        => $expiration_date,
-			'rest_last_requested' => date( 'Y-m-d', time() ),
+			//'rest_last_requested' => date( 'Y-m-d', time() ),
 			// current UTC time
 			'rest_tag'            => $tag,
 			'rest_to_update'      => $update,
