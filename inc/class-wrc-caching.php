@@ -286,17 +286,21 @@ class WRC_Caching {
 		/**
 		 * TODO: get guaranteed UTC time here, Seth and Justin had to do the same
 		 */
-
-		if ( strtotime( $data['rest_expires'] ) < time() && 1 != $data['rest_to_update'] ) {
-
-			// instead of updating rest_expires, update rest_timeout_length
-			$data['rest_args']      = maybe_serialize( $args );
-			$data['rest_to_update'] = 1;
-
-			global $wpdb;
+		global $wpdb;
+		$doUpdate = false;
+		switch(true){
+			case 1 == $data['rest_to_update']:
+				$doUpdate = true;
+				break;
+			case strtotime( $data['rest_expires'] ) < time():
+				$doUpdate = true;
+				$data['rest_args']      = maybe_serialize( $args );
+				$data['rest_to_update'] = 1;
+				break;
+		}
+		if($doUpdate){
+			$data['rest_last_requested'] = date('Y-m-d');
 			$wpdb->replace( REST_CACHE_TABLE, $data );
 		}
-
 	}
-
 }

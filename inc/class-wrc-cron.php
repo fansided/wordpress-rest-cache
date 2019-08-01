@@ -112,6 +112,16 @@ LIMIT ' . $limit;
 			$cache_cleared  = $cache_failed = $cache_attempted = 0;
 			self::maybe_log( 'log', 'Found ' . $cache_to_clear . ' records we need to update cache for.' );
 			foreach ( $results as $row ) {
+
+				// Call has not been requested in a month, get rid of it.
+				if(strtotime($row['rest_last_requested']) < strtotime('-30 days')){
+					$wpdb::delete( 'wp_rest_cache', [
+						'rest_md5'       => $row['rest_md5'],
+						'rest_to_update' => 1
+					] );
+					continue;
+				}
+
 				// run maybe_unserialize on rest_args and check to see if the update arg is set and set to false if it is
 				$args = maybe_unserialize( $row['rest_args'] );
 				$url  = $row['rest_domain'] . $row['rest_path'];
