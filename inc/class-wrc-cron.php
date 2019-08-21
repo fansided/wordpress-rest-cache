@@ -209,7 +209,7 @@ LIMIT ' . $limit;
 			// executed successfully
 		}else{
 			if ( function_exists( 'newrelic_notice_error' ) ) {
-				newrelic_notice_error( 'CRON FAIL: Unable to perform cleanup on un-requested old API cache.' );
+				newrelic_notice_error( 'CRON FAIL: Unable to perform cleanup on un-requested old API cache. Limit ' . $limit . ', Expired ' . $expiredBefore );
 			}
 		}
 		return;
