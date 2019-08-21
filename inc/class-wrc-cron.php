@@ -73,7 +73,7 @@ class WRC_Cron {
 				$cronsScheduled = true;
 			}
 			if( ! wp_next_scheduled( 'wp_rest_cache_expired_cron' ) ) {
-				wp_schedule_event( time(), '5_minutes', 'wp_rest_cache_expired_cron' );
+				wp_schedule_event( time(), 'hourly', 'wp_rest_cache_expired_cron' );
 				$cronsScheduled = true;
 			}
 			if( $cronsScheduled ) {
