@@ -206,11 +206,17 @@ DELETE FROM ' . REST_CACHE_TABLE . '
 WHERE  rest_expires < "' . $expiredBefore . '" AND rest_to_update=0
 LIMIT ' . $limit;
 
-		if($wpdb::query($query)){
-			// executed successfully
-		}else{
+		try {
+			if ( $wpdb->query( $query ) ) {
+				// executed successfully
+			} else {
+				if ( function_exists( 'newrelic_notice_error' ) ) {
+					newrelic_notice_error( 'CRON FAIL: Unable to perform cleanup on un-requested old API cache. Limit ' . $limit . ', Expired ' . $expiredBefore );
+				}
+			}
+		}catch( \Exception $e){
 			if ( function_exists( 'newrelic_notice_error' ) ) {
-				newrelic_notice_error( 'CRON FAIL: Unable to perform cleanup on un-requested old API cache. Limit ' . $limit . ', Expired ' . $expiredBefore );
+				newrelic_notice_error( 'CRON FAIL: '.$e->getMessage().'. Limit ' . $limit . ', Expired ' . $expiredBefore );
 			}
 		}
 		return;

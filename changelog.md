@@ -1,3 +1,7 @@
+#### 1.4.4
+* Final hotfix - sorry guys!
+* Changing from `$wpdb::query()` to `$wpdb->query()`
+
 #### 1.4.3
 * Include `rest_last_requested` when pulling from the database
 
