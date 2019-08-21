@@ -1,3 +1,6 @@
+#### 1.4.1
+* Hotfix - CircleCI
+
 #### 1.4.0
 * Rest Cache Cleanup
 * Don't mess with last requested
