@@ -1,3 +1,11 @@
+#### 1.4.0
+* Rest Cache Cleanup
+* Don't mess with last requested
+* Added 2nd CRON that will delete cache that is WAY expired and not called
+* Delete expired HOURLY instead of every 5 Minutes
+* Logging tweak
+* https://github.com/fansided/backlog/issues/90
+
 #### 1.3.8
 * Update release process to Circle CI
 
