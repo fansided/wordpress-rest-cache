@@ -125,7 +125,7 @@ LIMIT ' . $limit;
 
 				// Call has not been requested in a month, get rid of it.
 				if(strtotime($row['rest_last_requested']) < strtotime('-30 days')){
-					$wpdb::delete( 'wp_rest_cache', [
+					$wpdb->delete( 'wp_rest_cache', [
 						'rest_md5'       => $row['rest_md5'],
 						'rest_to_update' => 1
 					] );

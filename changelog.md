@@ -1,3 +1,6 @@
+#### 1.4.2
+* Hotfix - Change from static method call to chained
+
 #### 1.4.1
 * Hotfix - CircleCI
 
