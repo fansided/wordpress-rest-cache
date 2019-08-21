@@ -1,3 +1,6 @@
+#### 1.4.3
+* Include `rest_last_requested` when pulling from the database
+
 #### 1.4.2
 * Hotfix - Change from static method call to chained
 

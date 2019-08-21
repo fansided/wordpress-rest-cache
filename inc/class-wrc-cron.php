@@ -111,7 +111,8 @@ SELECT
 	rest_domain, 
 	rest_path, 
 	rest_args, 
-	rest_query_args 
+	rest_query_args,
+    rest_last_requested
 FROM ' . REST_CACHE_TABLE . ' 
 WHERE rest_to_update = 1 
 LIMIT ' . $limit;
