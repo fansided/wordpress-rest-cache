@@ -21,6 +21,7 @@ class WRC_Cron {
 		// set up any Cron needs, this should be able to run independently of the front-end processes
 		add_action( 'wp', array( get_called_class(), 'schedule_cron' ) );
 		add_action( 'wp_rest_cache_cron', array( get_called_class(), 'check_cache_for_updates' ) );
+		add_action( 'wp_rest_cache_expired_cron', array( get_called_class(), 'check_expired_cache' ) );
 		add_filter( 'cron_schedules', array( get_called_class(), 'add_schedule_interval' ) );
 	}
 
@@ -64,11 +65,20 @@ class WRC_Cron {
 		 * If we're on a multisite, only schedule the cron if we're on the primary blog
 		 */
 		if (
-			( ! $is_multisite || ( $is_multisite && $primary_blog->id === $current_blog ) )
-			&& ! wp_next_scheduled( 'wp_rest_cache_cron' )
+		( ! $is_multisite || ( $is_multisite && $primary_blog->id === $current_blog ) )
 		) {
-			wp_schedule_event( time(), '5_minutes', 'wp_rest_cache_cron' );
-			do_action( 'wrc_after_schedule_cron', $primary_blog, $current_blog );
+			$cronsScheduled = false;
+			if( ! wp_next_scheduled( 'wp_rest_cache_cron' ) ) {
+				wp_schedule_event( time(), '5_minutes', 'wp_rest_cache_cron' );
+				$cronsScheduled = true;
+			}
+			if( ! wp_next_scheduled( 'wp_rest_cache_expired_cron' ) ) {
+				wp_schedule_event( time(), 'hourly', 'wp_rest_cache_expired_cron' );
+				$cronsScheduled = true;
+			}
+			if( $cronsScheduled ) {
+				do_action( 'wrc_after_schedule_cron', $primary_blog, $current_blog );
+			}
 		}
 	}
 
@@ -101,7 +111,7 @@ SELECT
 	rest_domain, 
 	rest_path, 
 	rest_args, 
-	rest_query_args 
+	rest_query_args
 FROM ' . REST_CACHE_TABLE . ' 
 WHERE rest_to_update = 1 
 LIMIT ' . $limit;
@@ -112,6 +122,7 @@ LIMIT ' . $limit;
 			$cache_cleared  = $cache_failed = $cache_attempted = 0;
 			self::maybe_log( 'log', 'Found ' . $cache_to_clear . ' records we need to update cache for.' );
 			foreach ( $results as $row ) {
+
 				// run maybe_unserialize on rest_args and check to see if the update arg is set and set to false if it is
 				$args = maybe_unserialize( $row['rest_args'] );
 				$url  = $row['rest_domain'] . $row['rest_path'];
@@ -160,6 +171,46 @@ LIMIT ' . $limit;
 		self::maybe_log( 'log', get_called_class() . ' has been completed.' );
 
 		return;
+	}
+
+	/**
+	 * Retrieve rows that have not been requested after their expiration
+	 * Limiting to records older than 1 year
+	 */
+	static function check_expired_cache(){
+
+		global $wpdb;
+		$limit = 2000;
+		if ( class_exists( 'WRC_Logger' ) ) {
+			self::$logger = new WRC_Logger( get_called_class() );
+			$cron_limit   = get_option( WRC_Logger::SETTING_FLAG . '_limit', '2000' );
+			if ( is_numeric( $cron_limit ) ) {
+				$limit = $cron_limit;
+			}
+		}
+
+		$expiredBefore = date('Y-m-d', strtotime('-1 year'));
+
+		$query   = '
+DELETE FROM ' . REST_CACHE_TABLE . ' 
+WHERE  rest_expires < "' . $expiredBefore . '" AND rest_to_update=0
+LIMIT ' . $limit;
+
+		try {
+			if ( $wpdb->query( $query ) ) {
+				// executed successfully
+			} else {
+				if ( function_exists( 'newrelic_notice_error' ) ) {
+					newrelic_notice_error( 'CRON FAIL: Unable to perform cleanup on un-requested old API cache. Limit ' . $limit . ', Expired ' . $expiredBefore );
+				}
+			}
+		}catch( \Exception $e){
+			if ( function_exists( 'newrelic_notice_error' ) ) {
+				newrelic_notice_error( 'CRON FAIL: '.$e->getMessage().'. Limit ' . $limit . ', Expired ' . $expiredBefore );
+			}
+		}
+		return;
+
 	}
 
 	/**

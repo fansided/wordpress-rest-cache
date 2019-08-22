@@ -1,3 +1,9 @@
+#### 1.5.0
+* Added new cron to clean up expired caches that are not actively being viewed
+
+#### 1.4.x
+* ~~skipped due to DB crash~~
+
 #### 1.3.8
 * Update release process to Circle CI
 
