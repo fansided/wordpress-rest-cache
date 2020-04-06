@@ -9,6 +9,8 @@
  *
  */
 class WRC_Caching {
+	const CACHE_KEY_PREFIX = 'rest_cache_';
+
 	/**
 	 * Initialize
 	 */
@@ -103,8 +105,15 @@ class WRC_Caching {
 			'rest_status_code'         => $status_code,
 		);
 
-		// either update or insert
-		$wpdb->replace( REST_CACHE_TABLE, $data );
+		$driver = self::get_cache_driver();
+
+		if ($driver === 'redis') {
+			$ttl = $expiration_date ? strtotime($expiration_date) - time() : 3600;
+			\wp_cache_set(self::CACHE_KEY_PREFIX . $md5, $data, 'rest', $ttl);
+		} else {
+			// either update or insert
+			$wpdb->replace( REST_CACHE_TABLE, $data );
+		}
 
 		return $response;
 	}
@@ -240,10 +249,16 @@ class WRC_Caching {
 
 		$md5    = md5( strtolower( $domain . $path . $query ) );
 
-		$data = $wpdb->get_row( 'SELECT * FROM ' . REST_CACHE_TABLE . ' WHERE rest_md5 = "' . $md5 . '" ', ARRAY_A );
+		$driver = self::get_cache_driver();
+
+		if ($driver === 'redis') {
+			$data = \wp_cache_get(self::CACHE_KEY_PREFIX . $md5, 'rest');
+		} else {
+			$data = $wpdb->get_row( 'SELECT * FROM ' . REST_CACHE_TABLE . ' WHERE rest_md5 = "' . $md5 . '" ', ARRAY_A );
+		}
 
 		// if the query doesn't return a row from the DB, return false
-		if ( null === $data ) {
+		if ( !$data ) {
 			return false;
 		}
 
@@ -299,4 +314,8 @@ class WRC_Caching {
 
 	}
 
+	protected static function get_cache_driver()
+	{
+		return defined('REST_CACHE_DRIVER') && REST_CACHE_DRIVER === 'redis' ? 'redis' : 'mysql';
+	}
 }
