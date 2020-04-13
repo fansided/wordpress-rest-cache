@@ -105,15 +105,13 @@ class WRC_Caching {
 			'rest_status_code'         => $status_code,
 		);
 
-		$driver = self::get_cache_driver();
-
-		if ($driver === 'redis') {
+		if (self::get_cache_driver() === 'redis') {
 			$ttl = $expiration_date ? strtotime($expiration_date) - time() : 3600;
 			\wp_cache_set(self::CACHE_KEY_PREFIX . $md5, $data, 'rest', $ttl);
-		} else {
-			// either update or insert
-			$wpdb->replace( REST_CACHE_TABLE, $data );
 		}
+
+		// either update or insert
+		$wpdb->replace( REST_CACHE_TABLE, $data );
 
 		return $response;
 	}
@@ -249,11 +247,13 @@ class WRC_Caching {
 
 		$md5    = md5( strtolower( $domain . $path . $query ) );
 
-		$driver = self::get_cache_driver();
+		$date = false;
 
-		if ($driver === 'redis') {
+		if (self::get_cache_driver() === 'redis') {
 			$data = \wp_cache_get(self::CACHE_KEY_PREFIX . $md5, 'rest');
-		} else {
+		}
+
+		if (!$data) {
 			$data = $wpdb->get_row( 'SELECT * FROM ' . REST_CACHE_TABLE . ' WHERE rest_md5 = "' . $md5 . '" ', ARRAY_A );
 		}
 
