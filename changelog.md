@@ -1,3 +1,6 @@
+#### 1.6.0
+* Updates cache to allow redis driver
+
 #### 1.5.0
 * Added new cron to clean up expired caches that are not actively being viewed
 
