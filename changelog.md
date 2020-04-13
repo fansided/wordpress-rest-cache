@@ -1,3 +1,6 @@
+#### 1.7.0
+* Updates driver to layer redis on MySQL
+
 #### 1.6.0
 * Updates cache to allow redis driver
 
