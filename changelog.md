@@ -1,3 +1,6 @@
+#### 1.7.1
+* Caches results from MySQL in Redis
+
 #### 1.7.0
 * Updates driver to layer redis on MySQL
 
