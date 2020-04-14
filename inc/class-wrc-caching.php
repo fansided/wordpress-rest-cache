@@ -255,6 +255,9 @@ class WRC_Caching {
 
 		if (!$data) {
 			$data = $wpdb->get_row( 'SELECT * FROM ' . REST_CACHE_TABLE . ' WHERE rest_md5 = "' . $md5 . '" ', ARRAY_A );
+			if (self::get_cache_driver() === 'redis' && $data) {
+				\wp_cache_set(self::CACHE_KEY_PREFIX . $md5, $data, 'rest', 3600);
+			}
 		}
 
 		// if the query doesn't return a row from the DB, return false
